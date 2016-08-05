@@ -1,16 +1,16 @@
 package metrics
 
-// Suffix represents the type or precision of a metric that is appended to
+// Unit represents the type or precision of a metric that is appended to
 // the metrics fully qualified name
-type Suffix string
+type Unit string
 
 const (
 	// Nanoseconds specifies that the metric's values are in nanoseconds
-	Nanoseconds Suffix = "ns"
+	Nanoseconds Unit = "ns"
 	// Milliseconds specifies that the metric's values are in milliseconds
-	Milliseconds Suffix = "ms"
+	Milliseconds Unit = "ms"
 	// Seconds specifies that the metric's values are in seconds
-	Seconds Suffix = "s"
+	Seconds Unit = "s"
 	// Count specifies that the metric's values are a count
-	Count Suffix = "count"
+	Count Unit = "count"
 )

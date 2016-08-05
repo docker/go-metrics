@@ -14,8 +14,8 @@ type Timer interface {
 }
 
 type timer struct {
-	m      *prometheus.SummaryVec
-	suffix Suffix
+	m    *prometheus.SummaryVec
+	unit Unit
 }
 
 func (t *timer) UpdateSince(since time.Time, labels map[string]string) {
@@ -23,7 +23,7 @@ func (t *timer) UpdateSince(since time.Time, labels map[string]string) {
 		v float64
 		d = time.Now().Sub(since)
 	)
-	switch t.suffix {
+	switch t.unit {
 	case Nanoseconds:
 		v = float64(d.Nanoseconds())
 	case Milliseconds:

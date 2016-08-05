@@ -30,10 +30,10 @@ type Namespace interface {
 	NewCounter(name, help string, labels []string) Counter
 	// NewTimer returns a new Timer with the provided name and help string along with the keys
 	// of any dynamic labels what will be used with the timer
-	NewTimer(name, help string, suffix Suffix, labels []string) Timer
+	NewTimer(name, help string, unit Unit, labels []string) Timer
 	// NewGauge returns a new Gauge with the provided name and help string along with the keys
 	// of any dynamic labels what will be used with the gauge
-	NewGauge(name, help string, suffix Suffix, labels []string) Gauge
+	NewGauge(name, help string, unit Unit, labels []string) Gauge
 
 	getMetrics() []prometheus.Collector
 }
@@ -60,13 +60,13 @@ func (n *namespace) NewCounter(name, help string, labels []string) Counter {
 	return &counter{pc: c}
 }
 
-func (n *namespace) NewTimer(name, help string, suffix Suffix, labels []string) Timer {
+func (n *namespace) NewTimer(name, help string, unit Unit, labels []string) Timer {
 	t := &timer{
-		suffix: suffix,
+		unit: unit,
 		m: prometheus.NewSummaryVec(prometheus.SummaryOpts{
 			Namespace:   n.name,
 			Subsystem:   n.subsystem,
-			Name:        fmt.Sprintf("%s_%s", name, suffix),
+			Name:        fmt.Sprintf("%s_%s", name, unit),
 			Help:        help,
 			ConstLabels: prometheus.Labels(n.labels),
 		}, labels),
@@ -77,11 +77,11 @@ func (n *namespace) NewTimer(name, help string, suffix Suffix, labels []string) 
 	return t
 }
 
-func (n *namespace) NewGauge(name, help string, suffix Suffix, labels []string) Gauge {
+func (n *namespace) NewGauge(name, help string, unit Unit, labels []string) Gauge {
 	g := prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Namespace:   n.name,
 		Subsystem:   n.subsystem,
-		Name:        fmt.Sprintf("%s_%s", name, suffix),
+		Name:        fmt.Sprintf("%s_%s", name, unit),
 		Help:        help,
 		ConstLabels: prometheus.Labels(n.labels),
 	}, labels)
