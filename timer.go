@@ -6,7 +6,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
-// Timer is a metric that allows collecting the duration of some action
+// Timer is a metric that allows collecting the duration of an action in seconds
 type Timer interface {
 	// UpdateSince will add the duration from the provided starting time to the
 	// timer's summary with the precisions that was used in creation of the timer
@@ -14,24 +14,11 @@ type Timer interface {
 }
 
 type timer struct {
-	m    *prometheus.SummaryVec
-	unit Unit
+	m *prometheus.HistogramVec
 }
 
 func (t *timer) UpdateSince(since time.Time, labels map[string]string) {
-	var (
-		v float64
-		d = time.Now().Sub(since)
-	)
-	switch t.unit {
-	case Nanoseconds:
-		v = float64(d.Nanoseconds())
-	case Milliseconds:
-		v = float64(d.Nanoseconds() / 1e6)
-	case Seconds:
-		v = float64(d.Seconds())
-	}
-	t.m.With(prometheus.Labels(labels)).Observe(v)
+	t.m.With(prometheus.Labels(labels)).Observe(time.Now().Sub(since).Seconds())
 }
 
 func (t *timer) Describe(c chan<- *prometheus.Desc) {

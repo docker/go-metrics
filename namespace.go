@@ -30,7 +30,7 @@ type Namespace interface {
 	NewCounter(name, help string, labels []string) Counter
 	// NewTimer returns a new Timer with the provided name and help string along with the keys
 	// of any dynamic labels what will be used with the timer
-	NewTimer(name, help string, unit Unit, labels []string) Timer
+	NewTimer(name, help string, labels []string) Timer
 	// NewGauge returns a new Gauge with the provided name and help string along with the keys
 	// of any dynamic labels what will be used with the gauge
 	NewGauge(name, help string, unit Unit, labels []string) Gauge
@@ -50,7 +50,7 @@ func (n *namespace) NewCounter(name, help string, labels []string) Counter {
 	c := prometheus.NewCounterVec(prometheus.CounterOpts{
 		Namespace:   n.name,
 		Subsystem:   n.subsystem,
-		Name:        fmt.Sprintf("%s_count", name),
+		Name:        fmt.Sprintf("%s_total", name),
 		Help:        help,
 		ConstLabels: prometheus.Labels(n.labels),
 	}, labels)
@@ -60,13 +60,12 @@ func (n *namespace) NewCounter(name, help string, labels []string) Counter {
 	return &counter{pc: c}
 }
 
-func (n *namespace) NewTimer(name, help string, unit Unit, labels []string) Timer {
+func (n *namespace) NewTimer(name, help string, labels []string) Timer {
 	t := &timer{
-		unit: unit,
-		m: prometheus.NewSummaryVec(prometheus.SummaryOpts{
+		m: prometheus.NewHistogramVec(prometheus.HistogramOpts{
 			Namespace:   n.name,
 			Subsystem:   n.subsystem,
-			Name:        fmt.Sprintf("%s_%s", name, unit),
+			Name:        fmt.Sprintf("%s_s", name),
 			Help:        help,
 			ConstLabels: prometheus.Labels(n.labels),
 		}, labels),
