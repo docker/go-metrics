@@ -5,6 +5,8 @@ package metrics
 type Unit string
 
 const (
-	Seconds Unit = "seconds"
-	Bytes   Unit = "bytes"
+	Nanoseconds Unit = "nanoseconds"
+	Seconds     Unit = "seconds"
+	Bytes       Unit = "bytes"
+	Total       Unit = "total"
 )

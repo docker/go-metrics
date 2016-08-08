@@ -50,7 +50,7 @@ func (n *namespace) NewCounter(name, help string, labels []string) Counter {
 	c := prometheus.NewCounterVec(prometheus.CounterOpts{
 		Namespace:   n.name,
 		Subsystem:   n.subsystem,
-		Name:        fmt.Sprintf("%s_total", name),
+		Name:        fmt.Sprintf("%s_%s", name, Total),
 		Help:        help,
 		ConstLabels: prometheus.Labels(n.labels),
 	}, labels)
@@ -65,7 +65,7 @@ func (n *namespace) NewTimer(name, help string, labels []string) Timer {
 		m: prometheus.NewHistogramVec(prometheus.HistogramOpts{
 			Namespace:   n.name,
 			Subsystem:   n.subsystem,
-			Name:        fmt.Sprintf("%s_s", name),
+			Name:        fmt.Sprintf("%s_%s", name, Seconds),
 			Help:        help,
 			ConstLabels: prometheus.Labels(n.labels),
 		}, labels),

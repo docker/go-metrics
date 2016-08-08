@@ -2,6 +2,11 @@
 
 This package is small wrapper around the prometheus go client to help enforce convention and best practices for metrics collection in Docker projects.
 
+## Status
+
+This project is a work in progress.
+It is under heavy development and not intended to be used.
+
 ## Docs
 
 Package documentation can be found [here](https://godoc.org/github.com/docker/go-metrics).
