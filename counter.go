@@ -4,20 +4,49 @@ import "github.com/prometheus/client_golang/prometheus"
 
 // Counter is a metrics that can only increment its current count
 type Counter interface {
-	// Inc increments the counter's value by 1
-	Inc(map[string]string)
-	// Add will add the provided value to the counter's current value
-	Add(float64, map[string]string)
+	// Inc adds Sum(vs) to the counter. Sum(vs) must be positive.
+	//
+	// If len(vs) == 0, increments the counter by 1.
+	Inc(vs ...float64)
 }
 
-type counter struct {
+// LabeledCounter is counter that must have labels populated before use.
+type LabeledCounter interface {
+	WithValues(vs ...string) Counter
+}
+
+type labeledCounter struct {
 	pc *prometheus.CounterVec
 }
 
-func (c *counter) Inc(labels map[string]string) {
-	c.Add(1, labels)
+func (lc *labeledCounter) WithValues(vs ...string) Counter {
+	return &counter{pc: lc.pc.WithLabelValues(vs...)}
 }
 
-func (c *counter) Add(v float64, labels map[string]string) {
-	c.pc.With(prometheus.Labels(labels)).Add(v)
+func (lc *labeledCounter) Describe(ch chan<- *prometheus.Desc) {
+	lc.pc.Describe(ch)
+}
+
+func (lc *labeledCounter) Collect(ch chan<- prometheus.Metric) {
+	lc.pc.Collect(ch)
+}
+
+type counter struct {
+	pc prometheus.Counter
+}
+
+func (c *counter) Inc(vs ...float64) {
+	if len(vs) == 0 {
+		c.pc.Inc()
+	}
+
+	c.pc.Add(sumFloat64(vs...))
+}
+
+func (c *counter) Describe(ch chan<- *prometheus.Desc) {
+	c.pc.Describe(ch)
+}
+
+func (c *counter) Collect(ch chan<- prometheus.Metric) {
+	c.pc.Collect(ch)
 }
