@@ -40,10 +40,14 @@ type Namespace struct {
 //  Only metrics created with the returned namespace will get the new constant
 //  labels.  The returned namespace must be registered separately.
 func (n *Namespace) WithConstLabels(labels Labels) *Namespace {
-	ns := *n
-	ns.metrics = nil // blank this out
-	ns.labels = mergeLabels(ns.labels, labels)
-	return &ns
+	n.mu.Lock()
+	ns := &Namespace{
+		name:      n.name,
+		subsystem: n.subsystem,
+		labels:    mergeLabels(n.labels, labels),
+	}
+	n.mu.Unlock()
+	return ns
 }
 
 func (n *Namespace) NewCounter(name, help string) Counter {
