@@ -179,3 +179,116 @@ func makeName(name string, unit Unit) string {
 
 	return fmt.Sprintf("%s_%s", name, unit)
 }
+
+func (n *Namespace) NewDefaultHttpMetrics() []*HttpMetric {
+	return n.NewHttpMetricsWithOpts(HttpHandlerOpts{
+		DurationBuckets:     defaultDurationBuckets,
+		RequestSizeBuckets:  defaultResponseSizeBuckets,
+		ResponseSizeBuckets: defaultResponseSizeBuckets,
+	})
+}
+
+func (n *Namespace) NewHttpMetrics(durationBuckets, requestSizeBuckets, responseSizeBuckets []float64) []*HttpMetric {
+	return n.NewHttpMetricsWithOpts(HttpHandlerOpts{
+		DurationBuckets:     durationBuckets,
+		RequestSizeBuckets:  requestSizeBuckets,
+		ResponseSizeBuckets: responseSizeBuckets,
+	})
+}
+
+func (n *Namespace) NewHttpMetricsWithOpts(opts HttpHandlerOpts) []*HttpMetric {
+	if _, ok := n.labels["handler"]; !ok {
+		panic("label \"handler\" must be provided in the namespace")
+	}
+
+	var httpMetrics []*HttpMetric
+	inFlightMetric := n.NewInFlightGaugeMetric()
+	requestTotalMetric := n.NewRequestTotalMetric()
+	requestDurationMetric := n.NewRequestDurationMetric(opts.DurationBuckets)
+	requestSizeMetric := n.NewRequestSizeMetric(opts.RequestSizeBuckets)
+	responseSizeMetric := n.NewResponseSizeMetric(opts.ResponseSizeBuckets)
+	httpMetrics = append(httpMetrics, inFlightMetric, requestDurationMetric, requestTotalMetric, requestSizeMetric, responseSizeMetric)
+	return httpMetrics
+}
+
+func (n *Namespace) NewInFlightGaugeMetric() *HttpMetric {
+	metric := prometheus.NewGauge(prometheus.GaugeOpts{
+		Namespace:   n.name,
+		Subsystem:   n.subsystem,
+		Name:        "in_flight_requests",
+		Help:        "The in-flight HTTP requests",
+		ConstLabels: prometheus.Labels(n.labels),
+	})
+	httpMetric := &HttpMetric{metric, InstrumentHandlerInFlight}
+	n.Add(httpMetric)
+	return httpMetric
+}
+
+func (n *Namespace) NewRequestTotalMetric() *HttpMetric {
+	metric := prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace:   n.name,
+			Subsystem:   n.subsystem,
+			Name:        "requests_total",
+			Help:        "Total number of HTTP requests made.",
+			ConstLabels: prometheus.Labels(n.labels),
+		},
+		[]string{"code", "method"},
+	)
+	httpMetric := &HttpMetric{metric, InstrumentHandlerCounter}
+	n.Add(httpMetric)
+	return httpMetric
+}
+func (n *Namespace) NewRequestDurationMetric(buckets []float64) *HttpMetric {
+	if len(buckets) == 0 {
+		panic("DurationBuckets must be provided")
+	}
+	opts := prometheus.HistogramOpts{
+		Namespace:   n.name,
+		Subsystem:   n.subsystem,
+		Name:        "request_duration_seconds",
+		Help:        "The HTTP request latencies in seconds.",
+		Buckets:     buckets,
+		ConstLabels: prometheus.Labels(n.labels),
+	}
+	metric := prometheus.NewHistogramVec(opts, []string{"method"})
+	httpMetric := &HttpMetric{metric, InstrumentHandlerDuration}
+	n.Add(httpMetric)
+	return httpMetric
+}
+
+func (n *Namespace) NewRequestSizeMetric(buckets []float64) *HttpMetric {
+	if len(buckets) == 0 {
+		panic("RequestSizeBuckets must be provided")
+	}
+	opts := prometheus.HistogramOpts{
+		Namespace:   n.name,
+		Subsystem:   n.subsystem,
+		Name:        "request_size_bytes",
+		Help:        "The HTTP request sizes in bytes.",
+		Buckets:     buckets,
+		ConstLabels: prometheus.Labels(n.labels),
+	}
+	metric := prometheus.NewHistogramVec(opts, []string{})
+	httpMetric := &HttpMetric{metric, InstrumentHandlerRequestSize}
+	n.Add(httpMetric)
+	return httpMetric
+}
+
+func (n *Namespace) NewResponseSizeMetric(buckets []float64) *HttpMetric {
+	if len(buckets) == 0 {
+		panic("ResponseSizeBuckets must be provided")
+	}
+	opts := prometheus.HistogramOpts{
+		Namespace:   n.name,
+		Subsystem:   n.subsystem,
+		Name:        "response_size_bytes",
+		Help:        "The HTTP response sizes in bytes.",
+		Buckets:     buckets,
+		ConstLabels: prometheus.Labels(n.labels),
+	}
+	metrics := prometheus.NewHistogramVec(opts, []string{})
+	httpMetric := &HttpMetric{metrics, InstrumentHandlerResponseSize}
+	n.Add(httpMetric)
+	return httpMetric
+}
