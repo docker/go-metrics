@@ -7,8 +7,8 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
-// HttpHandlerOpts describes a set of configurable options of http metrics
-type HttpHandlerOpts struct {
+// HTTPHandlerOpts describes a set of configurable options of http metrics
+type HTTPHandlerOpts struct {
 	DurationBuckets     []float64
 	RequestSizeBuckets  []float64
 	ResponseSizeBuckets []float64
@@ -22,7 +22,7 @@ const (
 	InstrumentHandlerInFlight
 )
 
-type HttpMetric struct {
+type HTTPMetric struct {
 	prometheus.Collector
 	handlerType int
 }
@@ -39,11 +39,11 @@ func Handler() http.Handler {
 	return promhttp.Handler()
 }
 
-func InstrumentHandler(metrics []*HttpMetric, handler http.Handler) http.HandlerFunc {
+func InstrumentHandler(metrics []*HTTPMetric, handler http.Handler) http.HandlerFunc {
 	return InstrumentHandlerFunc(metrics, handler.ServeHTTP)
 }
 
-func InstrumentHandlerFunc(metrics []*HttpMetric, handlerFunc http.HandlerFunc) http.HandlerFunc {
+func InstrumentHandlerFunc(metrics []*HTTPMetric, handlerFunc http.HandlerFunc) http.HandlerFunc {
 	var handler http.Handler
 	handler = http.HandlerFunc(handlerFunc)
 	for _, metric := range metrics {
