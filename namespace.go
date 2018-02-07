@@ -217,7 +217,10 @@ func (n *Namespace) NewInFlightGaugeMetric(handlerName string) *HTTPMetric {
 		Help:        "The in-flight HTTP requests",
 		ConstLabels: prometheus.Labels(labels),
 	})
-	httpMetric := &HTTPMetric{metric, InstrumentHandlerInFlight}
+	httpMetric := &HTTPMetric{
+		Collector:   metric,
+		handlerType: InstrumentHandlerInFlight,
+	}
 	n.Add(httpMetric)
 	return httpMetric
 }
@@ -235,7 +238,10 @@ func (n *Namespace) NewRequestTotalMetric(handlerName string) *HTTPMetric {
 		},
 		[]string{"code", "method"},
 	)
-	httpMetric := &HTTPMetric{metric, InstrumentHandlerCounter}
+	httpMetric := &HTTPMetric{
+		Collector:   metric,
+		handlerType: InstrumentHandlerCounter,
+	}
 	n.Add(httpMetric)
 	return httpMetric
 }
@@ -254,7 +260,10 @@ func (n *Namespace) NewRequestDurationMetric(handlerName string, buckets []float
 		ConstLabels: prometheus.Labels(labels),
 	}
 	metric := prometheus.NewHistogramVec(opts, []string{"method"})
-	httpMetric := &HTTPMetric{metric, InstrumentHandlerDuration}
+	httpMetric := &HTTPMetric{
+		Collector:   metric,
+		handlerType: InstrumentHandlerDuration,
+	}
 	n.Add(httpMetric)
 	return httpMetric
 }
@@ -274,7 +283,10 @@ func (n *Namespace) NewRequestSizeMetric(handlerName string, buckets []float64) 
 		ConstLabels: prometheus.Labels(labels),
 	}
 	metric := prometheus.NewHistogramVec(opts, []string{})
-	httpMetric := &HTTPMetric{metric, InstrumentHandlerRequestSize}
+	httpMetric := &HTTPMetric{
+		Collector:   metric,
+		handlerType: InstrumentHandlerRequestSize,
+	}
 	n.Add(httpMetric)
 	return httpMetric
 }
@@ -294,7 +306,10 @@ func (n *Namespace) NewResponseSizeMetric(handlerName string, buckets []float64)
 		ConstLabels: prometheus.Labels(labels),
 	}
 	metrics := prometheus.NewHistogramVec(opts, []string{})
-	httpMetric := &HTTPMetric{metrics, InstrumentHandlerResponseSize}
+	httpMetric := &HTTPMetric{
+		Collector:   metrics,
+		handlerType: InstrumentHandlerResponseSize,
+	}
 	n.Add(httpMetric)
 	return httpMetric
 }
