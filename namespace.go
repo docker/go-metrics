@@ -74,7 +74,15 @@ func (n *Namespace) newCounterOpts(name, help string) prometheus.CounterOpts {
 
 func (n *Namespace) NewTimer(name, help string) Timer {
 	t := &timer{
-		m: prometheus.NewHistogram(n.newTimerOpts(name, help)),
+		m: prometheus.NewHistogram(n.newTimerOpts(name, help, []float64{})),
+	}
+	n.Add(t)
+	return t
+}
+
+func (n *Namespace) NewTimerWithBuckets(name, help string, buckets []float64) Timer {
+	t := &timer{
+		m: prometheus.NewHistogram(n.newTimerOpts(name, help, buckets)),
 	}
 	n.Add(t)
 	return t
@@ -82,20 +90,32 @@ func (n *Namespace) NewTimer(name, help string) Timer {
 
 func (n *Namespace) NewLabeledTimer(name, help string, labels ...string) LabeledTimer {
 	t := &labeledTimer{
-		m: prometheus.NewHistogramVec(n.newTimerOpts(name, help), labels),
+		m: prometheus.NewHistogramVec(n.newTimerOpts(name, help, []float64{}), labels),
 	}
 	n.Add(t)
 	return t
 }
 
-func (n *Namespace) newTimerOpts(name, help string) prometheus.HistogramOpts {
-	return prometheus.HistogramOpts{
+func (n *Namespace) NewLabeledTimerWithBuckets(name, help string, buckets []float64, labels ...string) LabeledTimer {
+	t := &labeledTimer{
+		m: prometheus.NewHistogramVec(n.newTimerOpts(name, help, buckets), labels),
+	}
+	n.Add(t)
+	return t
+}
+
+func (n *Namespace) newTimerOpts(name, help string, buckets []float64) prometheus.HistogramOpts {
+	opts := prometheus.HistogramOpts{
 		Namespace:   n.name,
 		Subsystem:   n.subsystem,
 		Name:        makeName(name, Seconds),
 		Help:        help,
 		ConstLabels: prometheus.Labels(n.labels),
 	}
+	if len(buckets) > 0 {
+		opts.Buckets = buckets
+	}
+	return opts
 }
 
 func (n *Namespace) NewGauge(name, help string, unit Unit) Gauge {
