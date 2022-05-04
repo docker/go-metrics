@@ -215,7 +215,7 @@ func (n *Namespace) NewInFlightGaugeMetric(handlerName string) *HTTPMetric {
 		Subsystem:   n.subsystem,
 		Name:        "in_flight_requests",
 		Help:        "The in-flight HTTP requests",
-		ConstLabels: prometheus.Labels(labels),
+		ConstLabels: labels,
 	})
 	httpMetric := &HTTPMetric{
 		Collector:   metric,
@@ -234,7 +234,7 @@ func (n *Namespace) NewRequestTotalMetric(handlerName string) *HTTPMetric {
 			Subsystem:   n.subsystem,
 			Name:        "requests_total",
 			Help:        "Total number of HTTP requests made.",
-			ConstLabels: prometheus.Labels(labels),
+			ConstLabels: labels,
 		},
 		[]string{"code", "method"},
 	)
@@ -257,7 +257,7 @@ func (n *Namespace) NewRequestDurationMetric(handlerName string, buckets []float
 		Name:        "request_duration_seconds",
 		Help:        "The HTTP request latencies in seconds.",
 		Buckets:     buckets,
-		ConstLabels: prometheus.Labels(labels),
+		ConstLabels: labels,
 	}
 	metric := prometheus.NewHistogramVec(opts, []string{"method"})
 	httpMetric := &HTTPMetric{
@@ -280,7 +280,7 @@ func (n *Namespace) NewRequestSizeMetric(handlerName string, buckets []float64) 
 		Name:        "request_size_bytes",
 		Help:        "The HTTP request sizes in bytes.",
 		Buckets:     buckets,
-		ConstLabels: prometheus.Labels(labels),
+		ConstLabels: labels,
 	}
 	metric := prometheus.NewHistogramVec(opts, []string{})
 	httpMetric := &HTTPMetric{
@@ -303,7 +303,7 @@ func (n *Namespace) NewResponseSizeMetric(handlerName string, buckets []float64)
 		Name:        "response_size_bytes",
 		Help:        "The HTTP response sizes in bytes.",
 		Buckets:     buckets,
-		ConstLabels: prometheus.Labels(labels),
+		ConstLabels: labels,
 	}
 	metrics := prometheus.NewHistogramVec(opts, []string{})
 	httpMetric := &HTTPMetric{

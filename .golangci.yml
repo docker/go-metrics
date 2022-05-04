@@ -1,0 +1,22 @@
+linters:
+  enable:
+    - structcheck
+    - varcheck
+    - staticcheck
+    - unconvert
+    - gofmt
+    - ineffassign
+    - vet
+    - unused
+    - misspell
+    - bodyclose
+    - errcheck
+    - prealloc
+    - goimports
+  disable:
+    - golint
+
+run:
+  deadline: 2m
+  skip-dirs:
+    - vendor

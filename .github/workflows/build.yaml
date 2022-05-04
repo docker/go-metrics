@@ -1,0 +1,44 @@
+name: Build
+
+on:
+  push:
+    branches: master
+  pull_request:
+    branches: master
+
+jobs:
+  build:
+    name: Run Build
+    strategy:
+      fail-fast: false
+      matrix:
+        go: [ '1.17', '1.18' ]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Set up Go ${{ matrix.go }}
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.go }}
+      - name: Checkout source code
+        uses: actions/checkout@v2
+      - name: Build
+        run: go build -v ./...
+      - name: Run tests
+        run: go test -v ./..
+
+  lint:
+    name: Run golangci linter
+    runs-on: ubuntu-20.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v2
+      - name: Run golangci linter
+        uses: golangci/golangci-lint-action@v2
+        with:
+          version: v1.45
+          skip-pkg-cache: true
+          skip-build-cache: true
+          args: --build-tags integration
