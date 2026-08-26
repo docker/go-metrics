@@ -44,6 +44,10 @@ var (
 
 // Handler is a convenience wrapper around [promhttp.Handler] that returns an
 // HTTP handler serving metrics from the default Prometheus gatherer.
+//
+// Deprecated: use [promhttp.Handler] directly.
+//
+//go:fix inline
 func Handler() http.Handler {
 	return promhttp.Handler()
 }
